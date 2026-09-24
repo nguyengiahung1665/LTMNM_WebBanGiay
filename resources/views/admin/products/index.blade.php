@@ -58,8 +58,7 @@
                             <td>{{ $product->featured ? '⭐' : '—' }}</td>
                             <td>
                                 <a href="/admin/san-pham/{{ $product->id }}/sua" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="POST" action="/admin/san-pham/{{ $product->id }}/xoa" style="display: inline;"
-                                    onsubmit="return confirm('Xóa sản phẩm này?')">
+                                <form method="POST" action="/admin/san-pham/{{ $product->id }}/xoa" style="display:inline" data-confirm-title="Ngừng kinh doanh sản phẩm" data-confirm="Bạn có chắc muốn ngừng kinh doanh '{{ $product->name }}'? Lịch sử đơn hàng vẫn được giữ nguyên." data-confirm-text="Ngừng kinh doanh" data-confirm-type="danger">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>

@@ -9,7 +9,7 @@
     </div>
 
     <div class="card" style="max-width: 600px;">
-        <form method="POST" action="/admin/thuong-hieu/{{ $brand->id }}/sua">
+        <form method="POST" action="/admin/thuong-hieu/{{ $brand->id }}/sua" id="brand-edit-form" data-unsaved-warning>
             @csrf
             <div class="form-group">
                 <label>Tên thương hiệu *</label>
@@ -21,7 +21,7 @@
                 </label>
             </div>
             <button type="submit" class="btn btn-primary">Cập nhật</button>
-            <a href="/admin/thuong-hieu" class="btn btn-secondary">Hủy</a>
+                <a href="/admin/thuong-hieu" class="btn btn-secondary" data-cancel-form="brand-edit-form">Hủy</a>
         </form>
     </div>
 @endsection

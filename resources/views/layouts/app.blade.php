@@ -949,23 +949,21 @@
         }
 
         .size-options button:hover,
-        .size-options button.active {
+        .size-options button.active,
+        .color-options button:hover,
+        .color-options button.active {
             border-color: #e94560;
-            background: #e94560;
-            color: #fff;
+            background: #fff1f2;
+            color: #be123c;
+            padding-left: 30px;
+            position: relative;
         }
 
         .color-options button {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            padding: 0;
-        }
-
-        .color-options button.active {
-            border-color: #e94560;
-            outline: 3px solid #e94560;
-            outline-offset: 2px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            padding: 8px 20px;
         }
 
         .qty-input {
@@ -1071,6 +1069,7 @@
 </head>
 
 <body>
+    <x-toast-container />
 
     <!-- Top Bar -->
     <div class="top-bar">
@@ -1201,6 +1200,7 @@
             });
         });
     </script>
+    <x-confirm-modal />
     @stack('scripts')
 </body>
 

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
@@ -30,8 +31,9 @@ class CheckoutController extends Controller
 
         $shippingFee = $subtotal >= 500000 ? 0 : 30000;
         $total = $subtotal + $shippingFee;
+        $locations = $this->locations();
 
-        return view('checkout.index', compact('cartItems', 'subtotal', 'shippingFee', 'total'));
+        return view('checkout.index', compact('cartItems', 'subtotal', 'shippingFee', 'total', 'locations'));
     }
 
     public function placeOrder(Request $request)
@@ -40,14 +42,38 @@ class CheckoutController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
+            'province_code' => 'required|string|max:10',
+            'ward_code' => 'required|string|max:10',
+            'address_detail' => 'required|string|max:255',
             'note' => 'nullable|string|max:1000',
         ], [
-            'full_name.required' => 'Vui lòng nhập họ tên người nhận',
-            'email.required' => 'Vui lòng nhập email',
-            'email.email' => 'Email không hợp lệ',
-            'phone.required' => 'Vui lòng nhập số điện thoại',
-            'address.required' => 'Vui lòng nhập địa chỉ giao hàng',
+            'full_name.required' => 'Vui lòng nhập họ tên người nhận.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'province_code.required' => 'Vui lòng chọn tỉnh/thành phố.',
+            'ward_code.required' => 'Vui lòng chọn phường/xã.',
+            'address_detail.required' => 'Vui lòng nhập địa chỉ chi tiết.',
+        ]);
+
+        $province = collect($this->locations())->firstWhere('code', $data['province_code']);
+        if (! $province) {
+            throw ValidationException::withMessages([
+                'province_code' => ['Tỉnh/thành phố đã chọn không hợp lệ.'],
+            ]);
+        }
+
+        $ward = collect($province['wards'])->firstWhere('code', $data['ward_code']);
+        if (! $ward) {
+            throw ValidationException::withMessages([
+                'ward_code' => ['Phường/xã không thuộc tỉnh/thành phố đã chọn.'],
+            ]);
+        }
+
+        $fullAddress = implode(', ', [
+            trim($data['address_detail']),
+            $ward['name'],
+            $province['name'],
         ]);
 
         $cartItems = CartItem::with(['product', 'variant'])
@@ -76,7 +102,7 @@ class CheckoutController extends Controller
                 'full_name' => $data['full_name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'],
-                'address' => $data['address'],
+                'address' => $fullAddress,
                 'note' => $data['note'] ?? null,
                 'shipping_fee' => $shippingFee,
                 'total_price' => $total,
@@ -142,5 +168,16 @@ class CheckoutController extends Controller
     {
         $order = Order::where('user_id', Auth::id())->findOrFail($id);
         return view('checkout.success', compact('order'));
+    }
+
+    private function locations(): array
+    {
+        $path = resource_path('data/vietnam-addresses.json');
+
+        if (! is_file($path)) {
+            return [];
+        }
+
+        return json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
     }
 }

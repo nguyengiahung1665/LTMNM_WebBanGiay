@@ -35,8 +35,7 @@
                             </td>
                             <td>
                                 <a href="/admin/danh-muc/{{ $cat->id }}/sua" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="POST" action="/admin/danh-muc/{{ $cat->id }}/xoa" style="display: inline;"
-                                    onsubmit="return confirm('Xóa danh mục này?')">
+                                <form method="POST" action="/admin/danh-muc/{{ $cat->id }}/xoa" style="display:inline" data-confirm-title="Xóa danh mục" data-confirm="Bạn có chắc muốn xóa danh mục '{{ $cat->name }}'?" data-confirm-text="Xóa" data-confirm-type="danger">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>

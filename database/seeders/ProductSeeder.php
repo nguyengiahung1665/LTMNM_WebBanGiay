@@ -266,10 +266,14 @@ class ProductSeeder extends Seeder
                 foreach ($createdColors as $color) {
                     ProductVariant::create([
                         'product_id' => $product->id,
+                        'sku' => "P{$product->id}-S{$size->id}-C{$color->id}",
                         'size' => $size->size,
                         'color_name' => $color->color_name,
                         'color_code' => $color->color_code,
                         'stock' => min($size->stock, $color->stock),
+                        'price' => $product->price,
+                        'sale_price' => $product->sale_price,
+                        'status' => true,
                     ]);
                 }
             }

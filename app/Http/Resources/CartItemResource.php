@@ -20,14 +20,14 @@ class CartItemResource extends JsonResource
                 'thumbnail_url' => $this->product?->thumbnail_url,
                 'final_price' => $this->product?->final_price,
             ],
-            'size' => $this->size ? [
-                'id' => $this->size->id,
-                'size' => $this->size->size,
-            ] : null,
-            'color' => $this->color ? [
-                'id' => $this->color->id,
-                'color_name' => $this->color->color_name,
-                'color_code' => $this->color->color_code,
+            'product_variant' => $this->variant ? [
+                'id' => $this->variant->id,
+                'sku' => $this->variant->sku,
+                'size' => $this->variant->size,
+                'color_name' => $this->variant->color_name,
+                'color_code' => $this->variant->color_code,
+                'stock' => $this->variant->stock,
+                'final_price' => $this->variant->final_price,
             ] : null,
         ];
     }

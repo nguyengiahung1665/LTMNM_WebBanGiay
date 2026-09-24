@@ -11,13 +11,6 @@
 
         <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 30px;">🛒 Giỏ hàng</h1>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-
         @if($cartItems->count() > 0)
             <div style="display: grid; grid-template-columns: 1fr 320px; gap: 30px;">
                 <div class="table-wrap">
@@ -47,8 +40,8 @@
                                         </a>
                                     </td>
                                     <td style="font-size: 13px; color: #666;">
-                                        @if($item->size) Size {{ $item->size->size }}<br>@endif
-                                        @if($item->color) Màu {{ $item->color->color_name }}@endif
+                                        @if($item->variant?->size) Size {{ $item->variant->size }}<br>@endif
+                                        @if($item->variant?->color_name) Màu {{ $item->variant->color_name }}@endif
                                     </td>
                                     <td style="font-weight: 600;">{{ number_format($item->product->final_price) }}₫</td>
                                     <td>
@@ -62,11 +55,11 @@
                                     </td>
                                     <td style="font-weight: 600; color: #e94560;">{{ number_format($item->subtotal) }}₫</td>
                                     <td>
-                                        <form method="POST" action="/gio-hang/xoa/{{ $item->id }}">
+                                        <form method="POST" action="/gio-hang/xoa/{{ $item->id }}" data-confirm-title="Xóa khỏi giỏ hàng" data-confirm="Bạn có chắc muốn xóa '{{ $item->product->name }}' khỏi giỏ hàng?" data-confirm-text="Xóa" data-confirm-type="danger">
                                             @csrf
                                             <button type="submit"
                                                 style="background: none; border: none; cursor: pointer; font-size: 18px; color: #dc3545;"
-                                                onclick="return confirm('Xóa sản phẩm này?')">✕</button>
+                                                aria-label="Xóa khỏi giỏ hàng">✕</button>
                                         </form>
                                     </td>
                                 </tr>

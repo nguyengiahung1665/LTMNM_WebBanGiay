@@ -35,8 +35,7 @@
                             </td>
                             <td>
                                 <a href="/admin/thuong-hieu/{{ $brand->id }}/sua" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="POST" action="/admin/thuong-hieu/{{ $brand->id }}/xoa" style="display: inline;"
-                                    onsubmit="return confirm('Xóa thương hiệu này?')">
+                                <form method="POST" action="/admin/thuong-hieu/{{ $brand->id }}/xoa" style="display:inline" data-confirm-title="Xóa thương hiệu" data-confirm="Bạn có chắc muốn xóa thương hiệu '{{ $brand->name }}'?" data-confirm-text="Xóa" data-confirm-type="danger">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </form>

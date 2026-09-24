@@ -9,12 +9,17 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Services\CacheService;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    public function __construct(private ProductService $productService)
+    {
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'brand']);
@@ -52,10 +57,14 @@ class ProductController extends Controller
             'status' => 'boolean',
             'featured' => 'boolean',
             'variants' => 'nullable|array',
+            'variants.*.sku' => 'required|string|max:100|distinct|unique:product_variants,sku',
             'variants.*.size' => 'nullable|string',
             'variants.*.color_name' => 'nullable|string',
             'variants.*.color_code' => 'nullable|string',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.sale_price' => 'nullable|numeric|min:0|lte:variants.*.price',
+            'variants.*.status' => 'nullable|boolean',
             'images' => 'nullable|array',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
@@ -73,17 +82,7 @@ class ProductController extends Controller
         $product = Product::create($data);
 
         // Thêm variants (mỗi dòng = 1 tổ hợp size+màu với stock riêng)
-        if ($request->has('variants')) {
-            foreach ($request->variants as $variantData) {
-                ProductVariant::create([
-                    'product_id' => $product->id,
-                    'size' => $variantData['size'] ?? null,
-                    'color_name' => $variantData['color_name'] ?? null,
-                    'color_code' => $variantData['color_code'] ?? null,
-                    'stock' => $variantData['stock'],
-                ]);
-            }
-        }
+        $this->productService->syncVariants($product, $data['variants'] ?? []);
 
         // Thêm images (upload file)
         if ($request->hasFile('images')) {
@@ -128,10 +127,15 @@ class ProductController extends Controller
             'status' => 'boolean',
             'featured' => 'boolean',
             'variants' => 'nullable|array',
+            'variants.*.id' => 'nullable|integer',
+            'variants.*.sku' => 'required|string|max:100|distinct',
             'variants.*.size' => 'nullable|string',
             'variants.*.color_name' => 'nullable|string',
             'variants.*.color_code' => 'nullable|string',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.sale_price' => 'nullable|numeric|min:0|lte:variants.*.price',
+            'variants.*.status' => 'nullable|boolean',
             'images' => 'nullable|array',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'delete_images' => 'nullable|array',
@@ -158,16 +162,7 @@ class ProductController extends Controller
 
         // Đồng bộ lại variants: xoá hết rồi tạo lại theo dữ liệu mới gửi lên
         if ($request->has('variants')) {
-            $product->variants()->delete();
-            foreach ($request->variants as $variantData) {
-                ProductVariant::create([
-                    'product_id' => $product->id,
-                    'size' => $variantData['size'] ?? null,
-                    'color_name' => $variantData['color_name'] ?? null,
-                    'color_code' => $variantData['color_code'] ?? null,
-                    'stock' => $variantData['stock'],
-                ]);
-            }
+            $this->productService->syncVariants($product, $data['variants']);
         }
 
         // Xoá các ảnh gallery được chọn xoá (nếu form gửi lên)
@@ -221,11 +216,8 @@ class ProductController extends Controller
             }
         }
 
-        $product->variants()->delete();
-        $product->images()->delete();
-
         $slug = $product->slug;
-        $product->delete();
+        $this->productService->deactivate($product);
 
         CacheService::forgetProduct($slug);
 

@@ -9,7 +9,7 @@
     </div>
 
     <div class="card">
-        <form method="POST" action="/admin/san-pham/{{ $product->id }}/sua" enctype="multipart/form-data">
+        <form method="POST" action="/admin/san-pham/{{ $product->id }}/sua" enctype="multipart/form-data" id="product-edit-form" data-unsaved-warning>
             @csrf
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -93,19 +93,29 @@
             <div id="variants-wrapper">
                 @forelse($product->variants as $i => $variant)
                     <div class="variant-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                        <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $variant->id }}">
+                        <input type="text" name="variants[{{ $i }}][sku]" class="form-control" placeholder="SKU"
+                            style="max-width: 150px;" value="{{ $variant->sku }}" required>
                         <input type="text" name="variants[{{ $i }}][size]" class="form-control" placeholder="Size (VD: 39)"
                             style="max-width: 130px;" value="{{ $variant->size }}">
                         <input type="text" name="variants[{{ $i }}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)"
                             style="max-width: 150px;" value="{{ $variant->color_name }}">
                         <input type="number" name="variants[{{ $i }}][stock]" class="form-control" placeholder="Số lượng"
                             style="max-width: 120px;" min="0" value="{{ $variant->stock }}" required>
+                        <input type="number" name="variants[{{ $i }}][price]" class="form-control" placeholder="Giá"
+                            style="max-width: 140px;" min="0" value="{{ $variant->price }}" required>
+                        <input type="number" name="variants[{{ $i }}][sale_price]" class="form-control" placeholder="Giá sale"
+                            style="max-width: 140px;" min="0" value="{{ $variant->sale_price }}">
                         <button type="button" class="btn btn-sm btn-secondary" onclick="this.parentElement.remove()">Xóa</button>
                     </div>
                 @empty
                     <div class="variant-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                        <input type="text" name="variants[0][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                         <input type="text" name="variants[0][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                         <input type="text" name="variants[0][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
                         <input type="number" name="variants[0][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
+                        <input type="number" name="variants[0][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
+                        <input type="number" name="variants[0][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
                         <button type="button" class="btn btn-sm btn-secondary" onclick="this.parentElement.remove()">Xóa</button>
                     </div>
                 @endforelse
@@ -135,7 +145,7 @@
 
             <div style="margin-top: 24px;">
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <a href="/admin/san-pham" class="btn btn-secondary">Hủy</a>
+                <a href="/admin/san-pham" class="btn btn-secondary" data-cancel-form="product-edit-form">Hủy</a>
             </div>
         </form>
     </div>
@@ -145,9 +155,12 @@
 
         function addVariant() {
             const html = `<div class="variant-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <input type="text" name="variants[${variantIndex}][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[${variantIndex}][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[${variantIndex}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
                     <input type="number" name="variants[${variantIndex}][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
+                    <input type="number" name="variants[${variantIndex}][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
+                    <input type="number" name="variants[${variantIndex}][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="this.parentElement.remove()">Xóa</button>
                 </div>`;
             document.getElementById('variants-wrapper').insertAdjacentHTML('beforeend', html);

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -29,7 +31,8 @@ class AuthController extends Controller
             'password.required' => 'Vui lòng nhập mật khẩu',
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        $email = Str::lower($credentials['email']);
+        $user = User::where('email', $email)->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return back()->withErrors([
@@ -37,14 +40,9 @@ class AuthController extends Controller
             ])->onlyInput('email');
         }
 
-        if ($user->isCurrentlyLoggedIn()) {
-            return back()->withErrors([
-                'email' => 'Tài khoản này đang được đăng nhập ở nơi khác, vui lòng đăng xuất trước khi đăng nhập lại',
-            ])->onlyInput('email');
-        }
-
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+        $this->invalidateOtherWebSessions($request, $user);
 
         return redirect()->intended('/');
     }
@@ -150,5 +148,17 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    private function invalidateOtherWebSessions(Request $request, User $user): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        DB::table(config('session.table', 'sessions'))
+            ->where('user_id', $user->getAuthIdentifier())
+            ->where('id', '!=', $request->session()->getId())
+            ->delete();
     }
 }

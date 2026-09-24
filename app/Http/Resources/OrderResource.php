@@ -27,12 +27,14 @@ class OrderResource extends JsonResource
                 return $this->items->map(fn ($item) => [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'sku' => $item->variant_sku,
                     'product_name' => $item->product_name,
                     'product_price' => $item->product_price,
                     'quantity' => $item->quantity,
                     'subtotal' => $item->subtotal,
-                    'size' => $item->size?->size,
-                    'color' => $item->color?->color_name,
+                    'size' => $item->variant_size,
+                    'color' => $item->variant_color_name,
                 ]);
             }),
         ];

@@ -1,18 +1,11 @@
 👟 HỆ THỐNG WEB BÁN GIÀY TRỰC TUYẾN (SneakerShop)
 Học Phần: Lập Trình Mã Nguồn Mở Với PHP
-Giảng Viên Hướng Dẫn: Nguyễn Thanh Truyền
+Giảng Viên Hướng Dẫn: Nguyễn Minh Hiển
 Sinh Viên Thực Hiện: 
-- 2001230372 - Lê Lưu Gia Khang
-- 2001230389 - Phạm Gia Khánh
-- 2001230566 - Phạm Ánh Ngọc
-- 2001230699 - Lê Đông Phước
-- 2001230959 - Nguyễn Thị Minh Thư
+ - Nguyễn Gia Hưng
+ - Nguyễn Thị Thuý Lành
+ - Nguyễn Hoà Hưng
   
-Mã Nguồn: C:\laragon\www\Do-An-PHP-WebBanGiay
-
-Repository GitHub: https://github.com/Khangle272/Do-An-PHP-WebBanGiay.git
-
-Website deploy: https://kash-personifiant-noncompulsorily.ngrok-free.dev
 
 📌 GIỚI THIỆU ĐỀ TÀI
 SneakerShop là hệ thống website bán giày trực tuyến xây dựng trên Laravel, mô phỏng đầy đủ nghiệp vụ một sàn thương mại điện tử quy mô nhỏ: quản lý sản phẩm theo biến thể (size + màu + tồn kho riêng từng biến thể), giỏ hàng, đặt hàng, quản trị đơn hàng, cùng các kỹ thuật tối ưu hệ thống nâng cao (Cache, Queue, WebSocket/Broadcasting).

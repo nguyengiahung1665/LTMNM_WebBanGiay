@@ -76,9 +76,9 @@
                     @if($sizes->count() > 0)
                         <div style="margin: 16px 0;">
                             <strong style="font-size: 14px;">Kích cỡ:</strong>
-                            <div class="size-options">
+                            <div class="size-options variant-options">
                                 @foreach($sizes as $size)
-                                    <button type="button" data-size="{{ $size }}">{{ $size }}</button>
+                                    <button type="button" class="variant-option" data-size="{{ $size }}">{{ $size }}</button>
                                 @endforeach
                             </div>
                         </div>
@@ -88,12 +88,12 @@
                     @if($colors->count() > 0)
                         <div style="margin: 16px 0;">
                             <strong style="font-size: 14px;">Màu sắc:</strong>
-                            <div class="color-options">
+                            <div class="color-options variant-options">
                                 @foreach($colors as $color)
                                     <button type="button"
                                         data-color-name="{{ $color['color_name'] }}"
                                         data-color-code="{{ $color['color_code'] }}"
-                                        style="width: auto; height: auto; min-width: 60px; white-space: nowrap; padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px;">{{ $color['color_name'] }}</button>
+                                        class="variant-option">{{ $color['color_name'] }}</button>
                                 @endforeach
                             </div>
                         </div>
@@ -104,14 +104,11 @@
                     <!-- Quantity -->
                     <div class="qty-input">
                         <strong style="font-size: 14px;">Số lượng:</strong>
-                        <button type="button"
-                            onclick="document.getElementById('qty').stepDown(); document.getElementById('qty').dispatchEvent(new Event('change'))"
-                            style="padding: 6px 14px; border: 2px solid #e0e0e0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 18px;">−</button>
-                        <input type="number" name="quantity" id="qty" value="1" min="1" max="99" readonly
-                            style="width: 50px; text-align: center; border: 2px solid #e0e0e0; border-radius: 6px; padding: 6px; font-size: 16px;">
-                        <button type="button"
-                            onclick="document.getElementById('qty').stepUp(); document.getElementById('qty').dispatchEvent(new Event('change'))"
-                            style="padding: 6px 14px; border: 2px solid #e0e0e0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 18px;">+</button>
+                        <span class="quantity-control">
+                            <button type="button" id="qty-minus" aria-label="Giảm số lượng">−</button>
+                            <input type="number" inputmode="numeric" name="quantity" id="qty" value="1" min="1" max="1" aria-label="Số lượng">
+                            <button type="button" id="qty-plus" aria-label="Tăng số lượng">+</button>
+                        </span>
                     </div>
 
                     <div style="display: flex; gap: 12px; margin-top: 24px;">
@@ -301,6 +298,7 @@
                     if (note) note.textContent = 'Còn ' + variant.stock + ' sản phẩm';
                     if (qtyInput) {
                         qtyInput.max = variant.stock;
+                        form.dispatchEvent(new CustomEvent('variant:changed', { detail: { stock: variant.stock } }));
                         if (parseInt(qtyInput.value || '1', 10) > variant.stock) qtyInput.value = variant.stock;
                     }
                 } else {
@@ -341,7 +339,7 @@
             form.addEventListener('submit', function (e) {
                 if ((hasSizes || hasColors) && !document.getElementById('selected-variant').value) {
                     e.preventDefault();
-                    alert('Vui lòng chọn size/màu còn hàng trước khi thêm vào giỏ!');
+                    window.Toast?.show('Vui lòng chọn size/màu còn hàng trước khi thêm vào giỏ!', 'warning');
                 }
             });
         })();
@@ -350,7 +348,7 @@
         document.getElementById('add-to-cart-form')?.addEventListener('submit', function (e) {
             @if(!auth()->check())
                 e.preventDefault();
-                alert('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+                window.Toast?.show('Vui lòng đăng nhập để thêm vào giỏ hàng!', 'warning');
                 window.location.href = '/dang-nhap';
             @endif
             });
@@ -366,9 +364,12 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                             'Accept': 'application/json',
                         }
-                    }).then(r => r.json()).then(data => {
+                    }).then(r => {
+                        if (!r.ok) throw new Error(String(r.status));
+                        return r.json();
+                    }).then(data => {
                         this.innerHTML = data.wished ? '❤️' : '🤍';
-                    });
+                    }).catch(error => window.Toast?.show(window.Toast.friendlyApiMessage(Number(error.message)), 'error'));
                 @else
                     window.location.href = '/dang-nhap';
                 @endauth

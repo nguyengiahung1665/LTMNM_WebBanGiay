@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -45,17 +46,12 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        $email = Str::lower($credentials['email']);
+        $user = User::where('email', $email)->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Email hoặc mật khẩu không chính xác'],
-            ]);
-        }
-
-        if ($user->isCurrentlyLoggedIn()) {
-            throw ValidationException::withMessages([
-                'email' => ['Tài khoản này đang được đăng nhập ở nơi khác, vui lòng đăng xuất trước khi đăng nhập lại'],
             ]);
         }
 

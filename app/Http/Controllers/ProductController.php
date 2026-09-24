@@ -33,7 +33,7 @@ class ProductController extends Controller
 
     protected function buildProductQuery(Request $request)
     {
-        $query = Product::active()->with(['category', 'brand', 'reviews']);
+        $query = Product::active()->with(['category', 'brand'])->withAvg('reviews', 'rating');
 
         // Filter theo danh mục
         if ($request->filled('category')) {
@@ -111,7 +111,14 @@ class ProductController extends Controller
 
         $product = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($slug) {
             return Product::active()
-                ->with(['category', 'brand', 'images', 'sizes', 'colors', 'reviews.user'])
+                ->with([
+                    'category',
+                    'brand',
+                    'images',
+                    'reviews.user',
+                    'variants' => fn ($query) => $query->where('status', true),
+                ])
+                ->withAvg('reviews', 'rating')
                 ->where('slug', $slug)
                 ->firstOrFail();
         });

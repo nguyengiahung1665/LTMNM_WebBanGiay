@@ -3,10 +3,12 @@
 namespace App\Models;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Product extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'category_id',
         'brand_id',
@@ -99,6 +101,10 @@ class Product extends Model
 
     public function getAvgRatingAttribute()
     {
+        if (array_key_exists('reviews_avg_rating', $this->attributes)) {
+            return round((float) $this->attributes['reviews_avg_rating'], 1);
+        }
+
         return round($this->reviews()->avg('rating') ?? 0, 1);
     }
 
@@ -114,6 +120,11 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(\App\Models\ProductVariant::class);
+    }
+
+    public function activeVariants()
+    {
+        return $this->variants()->where('status', true);
     }
     public function getThumbnailUrlAttribute()
     {

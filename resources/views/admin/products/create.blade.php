@@ -9,7 +9,7 @@
     </div>
 
     <div class="card">
-        <form method="POST" action="/admin/san-pham" enctype="multipart/form-data" id="product-form">
+        <form method="POST" action="/admin/san-pham" enctype="multipart/form-data" id="product-form" data-unsaved-warning>
             @csrf
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -81,9 +81,12 @@
             </p>
             <div id="variants-wrapper">
                 <div class="variant-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <input type="text" name="variants[0][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[0][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[0][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
                     <input type="number" name="variants[0][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
+                    <input type="number" name="variants[0][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
+                    <input type="number" name="variants[0][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="removeVariant(this)">Xóa</button>
                 </div>
             </div>
@@ -105,7 +108,7 @@
 
             <div style="margin-top: 24px;">
                 <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
-                <a href="/admin/san-pham" class="btn btn-secondary">Hủy</a>
+                <a href="/admin/san-pham" class="btn btn-secondary" data-cancel-form="product-form">Hủy</a>
                 <button type="button" class="btn btn-sm btn-secondary"
                     onclick="clearDraft()">🗑️ Xóa dữ liệu nháp</button>
             </div>
@@ -118,9 +121,12 @@
 
         function variantRowHtml(i) {
             return `<div class="variant-row" style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <input type="text" name="variants[${i}][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[${i}][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[${i}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
                     <input type="number" name="variants[${i}][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
+                    <input type="number" name="variants[${i}][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
+                    <input type="number" name="variants[${i}][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="removeVariant(this)">Xóa</button>
                 </div>`;
         }
@@ -138,11 +144,16 @@
         }
 
         function clearDraft() {
-            if (!confirm('Xóa toàn bộ dữ liệu đã nhập trong form này?')) return;
-            if (window.AdminFormDraft) {
-                AdminFormDraft.clear('product');
-            }
-            document.getElementById('product-form').reset();
+            ConfirmModal.open({
+                title: 'Xóa dữ liệu đã nhập',
+                message: 'Bạn có chắc muốn xóa toàn bộ dữ liệu đã nhập trong form này?',
+                confirmText: 'Xóa dữ liệu',
+                type: 'danger',
+                onConfirm: () => {
+                    if (window.AdminFormDraft) AdminFormDraft.clear('product');
+                    document.getElementById('product-form').reset();
+                }
+            });
         }
 
         const productForm = document.getElementById('product-form');

@@ -11,12 +11,6 @@
                 Nhập email của bạn, chúng tôi sẽ gửi liên kết đặt lại mật khẩu!
             </p>
 
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @if($errors->any())
                 <div class="alert alert-danger">
                     {{ $errors->first() }}

@@ -9,7 +9,7 @@
     </div>
 
     <div class="card" style="max-width: 600px;">
-        <form method="POST" action="/admin/danh-muc" id="category-form">
+        <form method="POST" action="/admin/danh-muc" id="category-form" data-unsaved-warning>
             @csrf
             <div class="form-group">
                 <label>Tên danh mục *</label>
@@ -25,9 +25,9 @@
                 </label>
             </div>
             <button type="submit" class="btn btn-primary">Lưu</button>
-            <a href="/admin/danh-muc" class="btn btn-secondary">Hủy</a>
+                <a href="/admin/danh-muc" class="btn btn-secondary" data-cancel-form="category-form">Hủy</a>
             <button type="button" class="btn btn-sm btn-secondary"
-                onclick="if(confirm('Xóa toàn bộ dữ liệu đã nhập trong form này?')){AdminFormDraft.clear('category');document.getElementById('category-form').reset();}">🗑️
+                onclick="ConfirmModal.open({title:'Xóa dữ liệu đã nhập',message:'Bạn có chắc muốn xóa toàn bộ dữ liệu đã nhập?',confirmText:'Xóa dữ liệu',type:'danger',onConfirm:()=>{AdminFormDraft.clear('category');document.getElementById('category-form').reset();}})">🗑️
                 Xóa dữ liệu nháp</button>
         </form>
     </div>

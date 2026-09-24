@@ -430,25 +430,26 @@
         <div class="topbar">
             <h1>@yield('title', 'Dashboard')</h1>
             <div class="user">
+                <x-admin-notifications />
                 <span>👤 {{ auth()->user()->name }}</span>
                 <a href="/" class="btn btn-sm btn-secondary">Xem trang</a>
             </div>
         </div>
 
         @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
             <script>
                 // Lưu thành công -> xoá dữ liệu nháp đã lưu trên trình duyệt
                 if (window.AdminFormDraft) { AdminFormDraft.clearAll(); }
             </script>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
         @yield('content')
     </div>
 
+    <x-toast-container />
+    <x-confirm-modal />
     @stack('scripts')
 </body>
 
