@@ -5,292 +5,234 @@ namespace Database\Seeders;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\ProductColor;
 use App\Models\ProductImage;
-use App\Models\ProductSize;
 use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
+    private const IMAGE_POOL = [
+        'products/nike-air-zoom-pegasus-40.jpg',
+        'products/nike-air-force-1-low.jpg',
+        'products/nike-lebron-xx.jpg',
+        'products/nike-metcon-9.jpg',
+        'products/nike-kyrie-infinity.jpg',
+        'products/nike-court-vision-low.jpg',
+        'products/nike-flex-experience-12.jpg',
+        'products/adidas-ultraboost-light.jpg',
+        'products/adidas-samba-og.jpg',
+        'products/adidas-predator-edge.jpg',
+        'products/adidas-ultraboost-23.jpg',
+        'products/adidas-crazyflight.jpg',
+        'products/adidas-gamecourt-2.jpg',
+        'products/puma-rs-x.jpg',
+        'products/puma-future-9.jpg',
+        'products/puma-ignite-elevate.jpg',
+        'products/vans-old-skool.jpg',
+        'products/vans-ultrarange-rapidweld.jpg',
+        'products/converse-chuck-70-premium.jpg',
+        'products/converse-run-star-hike.jpg',
+    ];
+
+    private const COLORS = [
+        'Black' => '#000000',
+        'White' => '#FFFFFF',
+        'Red' => '#EF4444',
+        'Blue' => '#2563EB',
+        'Grey' => '#6B7280',
+        'Green' => '#16A34A',
+        'Beige' => '#D6C7A1',
+        'Navy' => '#1E3A5F',
+        'Pink' => '#EC4899',
+        'Cream' => '#FFF4D6',
+    ];
+
     public function run(): void
     {
-        $categories = Category::all();
-        $brands = Brand::all();
+        $brands = Brand::query()->pluck('id', 'name');
+        $categories = Category::query()->pluck('id', 'name');
+        $catalog = $this->catalog();
+        $now = now();
 
-        $sizes = ['39', '40', '41', '42', '43', '44'];
-        $colors = [
-            ['name' => 'Trắng', 'code' => '#FFFFFF'],
-            ['name' => 'Đen', 'code' => '#000000'],
-            ['name' => 'Đỏ', 'code' => '#FF0000'],
-            ['name' => 'Xanh', 'code' => '#0000FF'],
-        ];
+        foreach ($catalog as $index => $data) {
+            $slug = Str::slug($data['name']);
+            $price = $data['price'];
+            $salePrice = $index % 3 === 0
+                ? (int) (floor(($price * .82) / 10000) * 10000)
+                : null;
 
-        $products = [
-            [
-                'name' => 'Nike Air Zoom Pegasus 40',
-                'category' => 'Giày Chạy Bộ',
-                'brand' => 'Nike',
-                'price' => 3500000,
-                'sale_price' => 2799000,
-                'description' => 'Giày chạy bộ Nike Air Zoom Pegasus 40 mang đến sự êm ái và đàn hồi vượt trội. Công nghệ Zoom Air giúp giảm chấn hiệu quả, phù hợp cho chạy bộ đường dài.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Nike Air Force 1 Low',
-                'category' => 'Giày Lifestyle',
-                'brand' => 'Nike',
-                'price' => 3200000,
-                'sale_price' => 2590000,
-                'description' => 'Giày Nike Air Force 1 Low là biểu tượng thời trang đường phố. Thiết kế cổ điển, chất da cao cấp, phù hợp mọi outfit.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Adidas Ultraboost Light',
-                'category' => 'Giày Chạy Bộ',
-                'brand' => 'Adidas',
-                'price' => 4500000,
-                'sale_price' => 3590000,
-                'description' => 'Adidas Ultraboost Light với công nghệ đệm Boost nhẹ nhất từ trước đến nay. Đem lại cảm giác chạy nhẹ nhàng và bứt phá.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Adidas Samba OG',
-                'category' => 'Giày Lifestyle',
-                'brand' => 'Adidas',
-                'price' => 2800000,
-                'sale_price' => 2190000,
-                'description' => 'Adidas Samba OG - huyền thoại giày sân cỏ đã trở thành biểu tượng thời trang. Thiết kế vintage không bao giờ lỗi mốt.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Puma RS-X',
-                'category' => 'Giày Năng Động',
-                'brand' => 'Puma',
-                'price' => 2500000,
-                'sale_price' => 1990000,
-                'description' => 'Giày Puma RS-X với phong cách retro pha trộn hiện đại. Công nghệ đệm RS (Running System) cho cảm giác êm chân.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Vans Old Skool',
-                'category' => 'Giày Lifestyle',
-                'brand' => 'Vans',
-                'price' => 1800000,
-                'sale_price' => null,
-                'description' => 'Vans Old Skool - giày trượt ván huyền thoại với sọc Sidestripe đặc trưng. Chất liệu lót bông êm ái.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Converse Chuck 70 Premium',
-                'category' => 'Giày Lifestyle',
-                'brand' => 'Converse',
-                'price' => 2200000,
-                'sale_price' => 1890000,
-                'description' => 'Converse Chuck 70 là phiên bản cao cấp của Chuck Taylor. Canvas dày hơn, đệm OrthoLite thoải mái hơn.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Nike LeBron XX',
-                'category' => 'Giày Bóng Rổ',
-                'brand' => 'Nike',
-                'price' => 5200000,
-                'sale_price' => 4290000,
-                'description' => 'Giày bóng rổ Nike LeBron XX thế hệ thứ 20. Công nghệ Zoom Air toàn bộ đế giúp bật nhảy mạnh mẽ.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Adidas Predator Edge',
-                'category' => 'Giày Đá Bóng',
-                'brand' => 'Adidas',
-                'price' => 3800000,
-                'sale_price' => 2990000,
-                'description' => 'Adidas Predator Edge với công nghệ Zone Skin giúp kiểm soát bóng tối đa. Đinh cao su phù hợp sân cỏ tự nhiên.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Nike Metcon 9',
-                'category' => 'Giày Tập Gym',
-                'brand' => 'Nike',
-                'price' => 3300000,
-                'sale_price' => null,
-                'description' => 'Giày tập Nike Metcon 9 được thiết kế cho CrossFit và tập luyện cường độ cao. Đế phẳng ổn định cho cử tạ.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Adidas Ultraboost 23',
-                'category' => 'Giày Chạy Bộ',
-                'brand' => 'Adidas',
-                'price' => 5000000,
-                'sale_price' => 3990000,
-                'description' => 'Adidas Ultraboost 23 thế hệ mới nhất. Công nghệ Linear Energy Push giúp tiết kiệm năng lượng khi chạy.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Puma Future 9',
-                'category' => 'Giày Đá Bóng',
-                'brand' => 'Puma',
-                'price' => 3200000,
-                'sale_price' => 2590000,
-                'description' => 'Puma Future 9 với công nghệ FUZIONFIT ôm chân như bao tay. Đinh FG/AG phù hợp đa dạng mặt sân.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Nike Kyrie Infinity',
-                'category' => 'Giày Bóng Rổ',
-                'brand' => 'Nike',
-                'price' => 3800000,
-                'sale_price' => 2990000,
-                'description' => 'Giày Kyrie Infinity thiết kế cho những pha xoay chuyển nhanh. Công nghệ Air Zoom Turbo giúp kiểm soát sân tốt hơn.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Adidas Crazyflight',
-                'category' => 'Giày Năng Động',
-                'brand' => 'Adidas',
-                'price' => 2900000,
-                'sale_price' => 2390000,
-                'description' => 'Adidas Crazyflight dành cho các môn thể thao tốc độ cao. Trọng lượng siêu nhẹ chỉ 250g, bay bổng mọi sân chơi.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Converse Run Star Hike',
-                'category' => 'Giày Lifestyle',
-                'brand' => 'Converse',
-                'price' => 2600000,
-                'sale_price' => 2150000,
-                'description' => 'Converse Run Star Hike phiên bản platform cá tính với đế răng cưa. Kết hợp giữa phong cách chuck và giày hiking.',
-                'featured' => true,
-            ],
-            [
-                'name' => 'Vans UltraRange Rapidweld',
-                'category' => 'Giày Năng Động',
-                'brand' => 'Vans',
-                'price' => 2100000,
-                'sale_price' => null,
-                'description' => 'Vans UltraRange Rapidweld - sự kết hợp giữa thoải mái và phong cách. Đệm UltraCush cho cảm giác nhẹ nhàng.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Nike Court Vision Low',
-                'category' => 'Giày Tennis',
-                'brand' => 'Nike',
-                'price' => 2300000,
-                'sale_price' => 1890000,
-                'description' => 'Nike Court Vision Low lấy cảm hứng từ giày tennis cổ điển. Thiết kế đơn giản, dễ phối đồ.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Adidas Gamecourt 2',
-                'category' => 'Giày Tennis',
-                'brand' => 'Adidas',
-                'price' => 2000000,
-                'sale_price' => 1690000,
-                'description' => 'Adidas Gamecourt 2 mang đến sự ổn định cho các pha di chuyển trên sân tennis. Đế Adiwear chống trượt.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Puma IGNITE Elevate',
-                'category' => 'Giày Tập Gym',
-                'brand' => 'Puma',
-                'price' => 2400000,
-                'sale_price' => 1990000,
-                'description' => 'Puma IGNITE Elevate với đệm ProFoam cho cảm giác tập luyện thoải mái. Phù hợp gym và cardio.',
-                'featured' => false,
-            ],
-            [
-                'name' => 'Nike Flex Experience 12',
-                'category' => 'Giày Tập Gym',
-                'brand' => 'Nike',
-                'price' => 1900000,
-                'sale_price' => null,
-                'description' => 'Nike Flex Experience 12 có độ linh hoạt cao, phù hợp cho các bài tập đa năng. Chất liệu nhẹ, thoáng khí.',
-                'featured' => false,
-            ],
-        ];
-
-        foreach ($products as $data) {
-            $category = $categories->firstWhere('name', $data['category']);
-            $brand = $brands->firstWhere('name', $data['brand']);
-            $thumbnail = $this->findImage($data['name']);
-
-            $product = Product::create([
-                'category_id' => $category->id,
-                'brand_id' => $brand->id,
+            $product = Product::updateOrCreate(['slug' => $slug], [
+                'category_id' => $categories[$data['category']],
+                'brand_id' => $brands[$data['brand']],
                 'name' => $data['name'],
-                'slug' => Str::slug($data['name']) . '-' . rand(1000, 9999),
-                'description' => $data['description'],
-                'price' => $data['price'],
-                'sale_price' => $data['sale_price'],
-                'thumbnail' => $thumbnail,
+                'description' => $this->description($data['name'], $data['brand'], $data['category']),
+                'price' => $price,
+                'sale_price' => $salePrice,
+                'thumbnail' => self::IMAGE_POOL[$index % count(self::IMAGE_POOL)],
                 'status' => true,
-                'featured' => $data['featured'],
+                'featured' => $index % 4 === 0,
+                'created_at' => $now->copy()->subDays(count($catalog) - $index - 1),
+                'updated_at' => $now,
             ]);
 
-            $createdSizes = [];
-            $createdColors = [];
-
-            // Thêm 3-5 ảnh cho sản phẩm
-            for ($i = 1; $i <= 4; $i++) {
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image' => 'https://picsum.photos/seed/' . Str::slug($data['name']) . "-$i/400/400",
-                    'sort_order' => $i,
-                ]);
-            }
-
-            // Thêm sizes
-            foreach ($sizes as $size) {
-                $createdSizes[] = ProductSize::create([
-                    'product_id' => $product->id,
-                    'size' => $size,
-                    'stock' => rand(5, 30),
-                ]);
-            }
-
-            // Thêm màu sắc
-            $colorCount = rand(2, 4);
-            for ($i = 0; $i < $colorCount; $i++) {
-                $createdColors[] = ProductColor::create([
-                    'product_id' => $product->id,
-                    'color_name' => $colors[$i]['name'],
-                    'color_code' => $colors[$i]['code'],
-                    'stock' => rand(5, 25),
-                ]);
-            }
-
-            // Tạo variants để hệ thống có tồn kho thực tế khi thêm vào giỏ hàng
-            foreach ($createdSizes as $size) {
-                foreach ($createdColors as $color) {
-                    ProductVariant::create([
-                        'product_id' => $product->id,
-                        'sku' => "P{$product->id}-S{$size->id}-C{$color->id}",
-                        'size' => $size->size,
-                        'color_name' => $color->color_name,
-                        'color_code' => $color->color_code,
-                        'stock' => min($size->stock, $color->stock),
-                        'price' => $product->price,
-                        'sale_price' => $product->sale_price,
-                        'status' => true,
-                    ]);
-                }
-            }
+            $this->seedImages($product, $index);
+            $this->seedVariants($product, $data['category'], $index);
         }
     }
-    private function findImage(string $productName): string
-    {
-        $slug = Str::slug($productName);
-        $extensions = ['jpg', 'jpeg', 'png', 'webp'];
 
-        foreach ($extensions as $ext) {
-            $path = "products/{$slug}.{$ext}";
-            if (Storage::disk('public')->exists($path)) {
-                return $path;
+    private function seedImages(Product $product, int $productIndex): void
+    {
+        $imageCount = count(self::IMAGE_POOL);
+
+        foreach ([1, 7, 13] as $sortOrder => $offset) {
+            ProductImage::updateOrCreate(
+                ['product_id' => $product->id, 'sort_order' => $sortOrder + 1],
+                ['image' => self::IMAGE_POOL[($productIndex + $offset) % $imageCount]]
+            );
+        }
+
+        $product->images()->where('sort_order', '>', 3)->delete();
+    }
+
+    private function seedVariants(Product $product, string $category, int $productIndex): void
+    {
+        $sizes = $this->sizesFor($category, $productIndex);
+        $colorCount = 2 + ($productIndex % 3);
+        $accentColors = array_slice(array_keys(self::COLORS), 2);
+        $colors = ['Black', 'White'];
+
+        for ($i = 0; $i < $colorCount - 2; $i++) {
+            $colors[] = $accentColors[($productIndex + $i) % count($accentColors)];
+        }
+
+        $expectedSkus = [];
+
+        foreach ($sizes as $sizeIndex => $size) {
+            foreach ($colors as $colorIndex => $colorName) {
+                $sku = sprintf('SNK-%03d-%s-%s', $productIndex + 1, $size, Str::upper(Str::substr($colorName, 0, 3)));
+                $stockSeed = (($productIndex + 1) * 37) + ($sizeIndex * 11) + ($colorIndex * 7);
+                $bucket = $stockSeed % 20;
+                $stock = match (true) {
+                    $bucket < 2 => 0,
+                    $bucket < 5 => 1 + ($stockSeed % 4),
+                    default => 5 + ($stockSeed % 26),
+                };
+
+                $variant = ProductVariant::withTrashed()->firstOrNew(['sku' => $sku]);
+                $variant->fill([
+                    'product_id' => $product->id,
+                    'size' => $size,
+                    'color_name' => $colorName,
+                    'color_code' => self::COLORS[$colorName],
+                    'stock' => $stock,
+                    'price' => $product->price,
+                    'sale_price' => $product->sale_price,
+                    'status' => true,
+                ]);
+                if ($variant->exists && $variant->trashed()) {
+                    $variant->restore();
+                }
+                $variant->save();
+
+                $expectedSkus[] = $sku;
             }
         }
 
-        return 'products/default.jpg';
+        $product->variants()->whereNotIn('sku', $expectedSkus)->update(['status' => false]);
+    }
+
+    /** @return array<int, string> */
+    private function sizesFor(string $category, int $productIndex): array
+    {
+        $sizes = match ($category) {
+            'Giày Bóng Rổ' => ['39', '40', '41', '42', '43', '44', '45'],
+            'Giày Lifestyle', 'Giày Skateboarding' => ['36', '37', '38', '39', '40', '41', '42', '43'],
+            'Dép & Sandals' => ['36', '37', '38', '39', '40', '41', '42'],
+            'Giày Đá Bóng' => ['39', '40', '41', '42', '43', '44'],
+            default => ['37', '38', '39', '40', '41', '42', '43', '44'],
+        };
+
+        $targetCount = 5 + ($productIndex % 3);
+        $selected = array_slice($sizes, 0, min($targetCount, count($sizes)));
+
+        if (in_array('42', $sizes, true) && !in_array('42', $selected, true)) {
+            $selected[array_key_last($selected)] = '42';
+            sort($selected, SORT_NUMERIC);
+        }
+
+        return $selected;
+    }
+
+    private function description(string $name, string $brand, string $category): string
+    {
+        return "{$name} của {$brand} được thiết kế cho dòng {$category}, kết hợp đệm êm, độ bám ổn định và phom ôm chân thoải mái. Phù hợp để vận động thường xuyên và phối đồ hằng ngày.";
+    }
+
+    /** @return array<int, array{name: string, brand: string, category: string, price: int}> */
+    private function catalog(): array
+    {
+        return [
+            ['name' => 'Nike Air Zoom Pegasus 40', 'brand' => 'Nike', 'category' => 'Giày Chạy Bộ', 'price' => 3590000],
+            ['name' => 'Nike Air Force 1 Low', 'brand' => 'Nike', 'category' => 'Giày Lifestyle', 'price' => 3290000],
+            ['name' => 'Nike LeBron XXI', 'brand' => 'Nike', 'category' => 'Giày Bóng Rổ', 'price' => 4890000],
+            ['name' => 'Nike Mercurial Vapor 15', 'brand' => 'Nike', 'category' => 'Giày Đá Bóng', 'price' => 4290000],
+            ['name' => 'Nike Metcon 9', 'brand' => 'Nike', 'category' => 'Giày Tập Gym', 'price' => 3390000],
+            ['name' => 'Nike Calm Slide', 'brand' => 'Nike', 'category' => 'Dép & Sandals', 'price' => 1490000],
+            ['name' => 'Nike Dunk Low Retro', 'brand' => 'Nike', 'category' => 'Giày Lifestyle', 'price' => 3190000],
+
+            ['name' => 'Adidas Ultraboost Light', 'brand' => 'Adidas', 'category' => 'Giày Chạy Bộ', 'price' => 4590000],
+            ['name' => 'Adidas Samba OG', 'brand' => 'Adidas', 'category' => 'Giày Lifestyle', 'price' => 2890000],
+            ['name' => 'Adidas Predator Accuracy', 'brand' => 'Adidas', 'category' => 'Giày Đá Bóng', 'price' => 3890000],
+            ['name' => 'Adidas Harden Vol 8', 'brand' => 'Adidas', 'category' => 'Giày Bóng Rổ', 'price' => 4190000],
+            ['name' => 'Adidas Dropset 3', 'brand' => 'Adidas', 'category' => 'Giày Tập Gym', 'price' => 3290000],
+            ['name' => 'Adidas Gamecourt 2', 'brand' => 'Adidas', 'category' => 'Giày Tennis', 'price' => 2090000],
+            ['name' => 'Adidas Forum Low', 'brand' => 'Adidas', 'category' => 'Giày Lifestyle', 'price' => 2790000],
+
+            ['name' => 'Air Jordan 1 Low', 'brand' => 'Jordan', 'category' => 'Giày Lifestyle', 'price' => 3490000],
+            ['name' => 'Air Jordan 4 Retro', 'brand' => 'Jordan', 'category' => 'Giày Lifestyle', 'price' => 5290000],
+            ['name' => 'Jordan Luka 3', 'brand' => 'Jordan', 'category' => 'Giày Bóng Rổ', 'price' => 3690000],
+            ['name' => 'Jordan Tatum 2', 'brand' => 'Jordan', 'category' => 'Giày Bóng Rổ', 'price' => 3390000],
+
+            ['name' => 'Converse Chuck 70 Premium', 'brand' => 'Converse', 'category' => 'Giày Lifestyle', 'price' => 2290000],
+            ['name' => 'Converse Run Star Hike', 'brand' => 'Converse', 'category' => 'Giày Lifestyle', 'price' => 2690000],
+            ['name' => 'Converse Chuck Taylor All Star', 'brand' => 'Converse', 'category' => 'Giày Lifestyle', 'price' => 1790000],
+            ['name' => 'Converse Weapon CX', 'brand' => 'Converse', 'category' => 'Giày Bóng Rổ', 'price' => 2990000],
+
+            ['name' => 'Vans Old Skool', 'brand' => 'Vans', 'category' => 'Giày Skateboarding', 'price' => 1890000],
+            ['name' => 'Vans Sk8-Hi', 'brand' => 'Vans', 'category' => 'Giày Skateboarding', 'price' => 2190000],
+            ['name' => 'Vans Knu Skool', 'brand' => 'Vans', 'category' => 'Giày Skateboarding', 'price' => 2390000],
+            ['name' => 'Vans UltraRange EXO', 'brand' => 'Vans', 'category' => 'Giày Năng Động', 'price' => 2490000],
+
+            ['name' => 'Puma RS-X Efekt', 'brand' => 'Puma', 'category' => 'Giày Lifestyle', 'price' => 2690000],
+            ['name' => 'Puma Velocity Nitro 3', 'brand' => 'Puma', 'category' => 'Giày Chạy Bộ', 'price' => 3190000],
+            ['name' => 'Puma Future 7 Match', 'brand' => 'Puma', 'category' => 'Giày Đá Bóng', 'price' => 2790000],
+            ['name' => 'Puma Fuse 3', 'brand' => 'Puma', 'category' => 'Giày Tập Gym', 'price' => 2490000],
+
+            ['name' => 'New Balance Fresh Foam X 1080 v13', 'brand' => 'New Balance', 'category' => 'Giày Chạy Bộ', 'price' => 4290000],
+            ['name' => 'New Balance 574 Core', 'brand' => 'New Balance', 'category' => 'Giày Lifestyle', 'price' => 2690000],
+            ['name' => 'New Balance 550', 'brand' => 'New Balance', 'category' => 'Giày Lifestyle', 'price' => 3190000],
+            ['name' => 'New Balance FuelCell Rebel v4', 'brand' => 'New Balance', 'category' => 'Giày Chạy Bộ', 'price' => 3890000],
+
+            ['name' => 'Asics Gel-Kayano 30', 'brand' => 'Asics', 'category' => 'Giày Chạy Bộ', 'price' => 4490000],
+            ['name' => 'Asics Gel-Nimbus 26', 'brand' => 'Asics', 'category' => 'Giày Chạy Bộ', 'price' => 4690000],
+            ['name' => 'Asics Gel-Resolution 9', 'brand' => 'Asics', 'category' => 'Giày Tennis', 'price' => 3690000],
+            ['name' => 'Asics Japan S', 'brand' => 'Asics', 'category' => 'Giày Lifestyle', 'price' => 2090000],
+
+            ['name' => 'Reebok Classic Leather', 'brand' => 'Reebok', 'category' => 'Giày Lifestyle', 'price' => 2290000],
+            ['name' => 'Reebok Club C 85', 'brand' => 'Reebok', 'category' => 'Giày Lifestyle', 'price' => 2190000],
+            ['name' => 'Reebok Nano X4', 'brand' => 'Reebok', 'category' => 'Giày Tập Gym', 'price' => 3490000],
+            ['name' => 'Reebok Floatride Energy 5', 'brand' => 'Reebok', 'category' => 'Giày Chạy Bộ', 'price' => 2890000],
+
+            ['name' => 'Under Armour HOVR Phantom 3', 'brand' => 'Under Armour', 'category' => 'Giày Chạy Bộ', 'price' => 3790000],
+            ['name' => 'Under Armour Curry 11', 'brand' => 'Under Armour', 'category' => 'Giày Bóng Rổ', 'price' => 4390000],
+            ['name' => 'Under Armour TriBase Reign 6', 'brand' => 'Under Armour', 'category' => 'Giày Tập Gym', 'price' => 3290000],
+            ['name' => 'Under Armour Magnetico Elite 4', 'brand' => 'Under Armour', 'category' => 'Giày Đá Bóng', 'price' => 3990000],
+
+            ['name' => 'Skechers Go Run Ride 11', 'brand' => 'Skechers', 'category' => 'Giày Chạy Bộ', 'price' => 2990000],
+            ['name' => 'Skechers Max Cushioning Elite', 'brand' => 'Skechers', 'category' => 'Giày Chạy Bộ', 'price' => 3190000],
+            ['name' => 'Skechers Uno Stand on Air', 'brand' => 'Skechers', 'category' => 'Giày Lifestyle', 'price' => 2390000],
+            ['name' => 'Skechers Go Walk Arch Fit', 'brand' => 'Skechers', 'category' => 'Giày Năng Động', 'price' => 2590000],
+        ];
     }
 }

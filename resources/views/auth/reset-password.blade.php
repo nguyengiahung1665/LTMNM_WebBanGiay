@@ -1,42 +1,15 @@
 @extends('layouts.app')
-
 @section('title', 'Đặt lại mật khẩu')
-
 @section('content')
-    <div style="min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 60px 20px;">
-        <div
-            style="background: #fff; border-radius: 16px; box-shadow: 0 4px 30px rgba(0,0,0,0.08); padding: 40px; width: 100%; max-width: 420px;">
-            <h1 style="font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 8px;">Đặt lại mật khẩu</h1>
-            <p style="text-align: center; color: #666; margin-bottom: 30px; font-size: 14px;">Nhập mật khẩu mới cho tài khoản
-                của bạn!</p>
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('password.update') }}">
-                @csrf
-                <input type="hidden" name="token" value="{{ $token }}">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $email) }}"
-                        required placeholder="Nhập email">
-                </div>
-                <div class="form-group">
-                    <label for="password">Mật khẩu mới</label>
-                    <input type="password" name="password" id="password" class="form-control" required
-                        placeholder="Ít nhất 6 ký tự">
-                </div>
-                <div class="form-group">
-                    <label for="password_confirmation">Xác nhận mật khẩu mới</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" class="form-control"
-                        required placeholder="Nhập lại mật khẩu mới">
-                </div>
-                <button type="submit" class="btn btn-primary w-full"
-                    style="justify-content: center; padding: 12px; font-size: 16px;">Đặt lại mật khẩu</button>
-            </form>
-        </div>
-    </div>
+<div class="auth-shell">
+    <section class="auth-visual"><p class="eyebrow">Bảo mật tài khoản</p><h2>MỘT KHỞI ĐẦU AN TOÀN HƠN.</h2><p>Chọn mật khẩu mới có ít nhất 6 ký tự và không chia sẻ với người khác.</p></section>
+    <div class="auth-main"><div class="auth-card"><p class="eyebrow">Mật khẩu mới</p><h1>Đặt lại mật khẩu</h1><p class="auth-card__lead">Hoàn tất thông tin để truy cập lại tài khoản.</p>
+        <form method="POST" action="{{ route('password.update') }}" data-validate novalidate>@csrf<input type="hidden" name="token" value="{{ $token }}">
+            <div class="form-group"><label for="email">Email</label><input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $email) }}" required data-required-message="Vui lòng nhập email.">@error('email')<span class="field-error">{{ $message }}</span>@enderror<span class="field-error" data-error-for="email" hidden></span></div>
+            <div class="form-group"><label for="password">Mật khẩu mới</label><input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" minlength="6" required data-required-message="Vui lòng nhập mật khẩu mới.">@error('password')<span class="field-error">{{ $message }}</span>@enderror<span class="field-error" data-error-for="password" hidden></span></div>
+            <div class="form-group"><label for="password_confirmation">Xác nhận mật khẩu</label><input type="password" name="password_confirmation" id="password_confirmation" class="form-control" minlength="6" required data-required-message="Vui lòng xác nhận mật khẩu."><span class="field-error" data-error-for="password_confirmation" hidden></span></div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Đặt lại mật khẩu <x-icon name="check" /></button>
+        </form>
+    </div></div>
+</div>
 @endsection

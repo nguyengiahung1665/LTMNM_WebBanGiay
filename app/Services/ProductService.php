@@ -47,7 +47,9 @@ class ProductService
                 'sale_price' => $attributes['sale_price'] ?? null,
                 'status' => (bool) ($attributes['status'] ?? true),
             ]);
-            $variant->restore();
+            if ($variant->exists && $variant->trashed()) {
+                $variant->restore();
+            }
             $variant->save();
             $retainedIds[] = $variant->id;
         }

@@ -1,6 +1,6 @@
 <div class="admin-notifications" id="admin-notifications">
     <button type="button" class="notification-bell" id="notification-bell" aria-label="Thông báo đơn hàng" aria-expanded="false">
-        <span aria-hidden="true">🔔</span>
+        <x-icon name="package" size="18" />
         <span class="notification-count" id="notification-count" hidden>0</span>
     </button>
     <div class="notification-panel" id="notification-panel" hidden>

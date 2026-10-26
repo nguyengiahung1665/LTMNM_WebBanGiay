@@ -11,7 +11,9 @@ class WishlistController extends Controller
     public function index()
     {
         $wishlist = Auth::user()->wishlists()
-            ->with('product.category', 'product.brand')
+            ->with(['product' => fn ($query) => $query
+                ->with(['category', 'brand', 'images'])
+                ->withAvg('reviews', 'rating')])
             ->latest()
             ->get();
 

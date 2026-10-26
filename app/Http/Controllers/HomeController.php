@@ -15,8 +15,14 @@ class HomeController extends Controller
         // -> cache 30 phút, tự xoá khi admin thêm/sửa/xoá sản phẩm.
         $data = Cache::remember(CacheService::KEY_HOME, CacheService::TTL_MEDIUM, function () {
             return [
-                'featuredProducts' => Product::active()->featured()->with(['category', 'brand'])->latest()->take(8)->get(),
-                'newProducts' => Product::active()->with(['category', 'brand'])->latest()->take(8)->get(),
+                'featuredProducts' => Product::active()->featured()->with(['category', 'brand', 'images'])->withAvg('reviews', 'rating')->latest()->take(8)->get(),
+                'newProducts' => Product::active()->with(['category', 'brand', 'images'])->withAvg('reviews', 'rating')->latest()->take(8)->get(),
+                'saleProducts' => Product::active()->with(['category', 'brand', 'images'])
+                    ->withAvg('reviews', 'rating')->whereNotNull('sale_price')->whereColumn('sale_price', '<', 'price')->latest()->take(8)->get(),
+                'trendingProducts' => Product::active()->with(['category', 'brand', 'images'])
+                    ->withAvg('reviews', 'rating')->withCount('orderItems')->orderByDesc('order_items_count')->latest()->take(4)->get(),
+                'bestSellerProducts' => Product::active()->with(['category', 'brand', 'images'])
+                    ->withAvg('reviews', 'rating')->withCount('orderItems')->orderByDesc('order_items_count')->take(8)->get(),
             ];
         });
 
@@ -27,8 +33,14 @@ class HomeController extends Controller
         return view('home', [
             'featuredProducts' => $data['featuredProducts'],
             'newProducts' => $data['newProducts'],
+            'saleProducts' => $data['saleProducts'] ?? collect(),
+            'trendingProducts' => $data['trendingProducts'] ?? collect(),
+            'bestSellerProducts' => $data['bestSellerProducts'] ?? collect(),
             'categories' => $categories,
             'brands' => $brands,
+            'wishlistProductIds' => auth()->check()
+                ? auth()->user()->wishlists()->pluck('product_id')->all()
+                : [],
         ]);
     }
 }

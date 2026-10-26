@@ -97,6 +97,9 @@ class CheckoutAddressTest extends TestCase
             'product_variant_id' => $variant->id,
             'quantity' => 2,
         ]);
+
+        $this->actingAs($user)->get('/don-hang')->assertOk()->assertSee($order->order_code);
+        $this->actingAs($user)->get('/don-hang/'.$order->id)->assertOk()->assertSee($order->order_code);
     }
 
     private function createCart(array $province, array $ward): array

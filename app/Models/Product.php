@@ -53,7 +53,7 @@ class Product extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductImage::class);
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order')->orderBy('id');
     }
 
     public function sizes()
@@ -126,14 +126,22 @@ class Product extends Model
     {
         return $this->variants()->where('status', true);
     }
-    public function getThumbnailUrlAttribute()
+    public function getThumbnailUrlAttribute(): string
     {
-        if (!$this->thumbnail) {
-            return 'https://via.placeholder.com/400x400?text=No+Image';
+        if ($thumbnailUrl = ProductImage::resolveUrl($this->thumbnail)) {
+            return $thumbnailUrl;
         }
-        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
-            return $this->thumbnail;
+
+        $images = $this->relationLoaded('images')
+            ? $this->images
+            : $this->images()->get(['product_images.id', 'product_images.product_id', 'product_images.image', 'product_images.sort_order']);
+
+        foreach ($images as $image) {
+            if ($imageUrl = ProductImage::resolveUrl($image->image)) {
+                return $imageUrl;
+            }
         }
-        return asset('storage/' . $this->thumbnail);
+
+        return ProductImage::placeholderUrl();
     }
 }

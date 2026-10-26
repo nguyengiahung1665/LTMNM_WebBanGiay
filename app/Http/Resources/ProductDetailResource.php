@@ -30,20 +30,35 @@ class ProductDetailResource extends JsonResource
                     'sort_order' => $image->sort_order,
                 ]);
             }),
-            'sizes' => $this->whenLoaded('sizes', function () {
-                return $this->sizes->map(fn ($size) => [
-                    'id' => $size->id,
-                    'size' => $size->size,
-                    'stock' => $size->stock,
-                ]);
+            'variants' => $this->whenLoaded('variants', function () {
+                return $this->variants->map(fn ($variant) => [
+                    'id' => $variant->id,
+                    'sku' => $variant->sku,
+                    'size' => $variant->size,
+                    'color_name' => $variant->color_name,
+                    'color_code' => $variant->color_code,
+                    'stock' => $variant->stock,
+                    'price' => $variant->price,
+                    'sale_price' => $variant->sale_price,
+                    'available' => $variant->status && $variant->stock > 0,
+                ])->values();
             }),
-            'colors' => $this->whenLoaded('colors', function () {
-                return $this->colors->map(fn ($color) => [
-                    'id' => $color->id,
-                    'color_name' => $color->color_name,
-                    'color_code' => $color->color_code,
-                    'stock' => $color->stock,
-                ]);
+            'sizes' => $this->whenLoaded('variants', function () {
+                return $this->variants->where('stock', '>', 0)
+                    ->groupBy('size')
+                    ->map(fn ($variants, $size) => [
+                        'size' => $size,
+                        'stock' => $variants->sum('stock'),
+                    ])->values();
+            }),
+            'colors' => $this->whenLoaded('variants', function () {
+                return $this->variants->where('stock', '>', 0)
+                    ->groupBy(fn ($variant) => $variant->color_name.'|'.$variant->color_code)
+                    ->map(fn ($variants) => [
+                        'color_name' => $variants->first()->color_name,
+                        'color_code' => $variants->first()->color_code,
+                        'stock' => $variants->sum('stock'),
+                    ])->values();
             }),
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
         ];

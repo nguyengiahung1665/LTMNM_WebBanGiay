@@ -84,6 +84,7 @@
                     <input type="text" name="variants[0][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[0][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[0][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
+                    <input type="text" name="variants[0][color_code]" class="form-control" placeholder="#000000" pattern="^#[0-9A-Fa-f]{6}$" title="Mã màu dạng #RRGGBB" style="max-width: 105px;">
                     <input type="number" name="variants[0][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
                     <input type="number" name="variants[0][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
                     <input type="number" name="variants[0][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
@@ -124,6 +125,7 @@
                     <input type="text" name="variants[${i}][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[${i}][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[${i}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
+                    <input type="text" name="variants[${i}][color_code]" class="form-control" placeholder="#000000" pattern="^#[0-9A-Fa-f]{6}$" title="Mã màu dạng #RRGGBB" style="max-width: 105px;">
                     <input type="number" name="variants[${i}][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
                     <input type="number" name="variants[${i}][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
                     <input type="number" name="variants[${i}][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">

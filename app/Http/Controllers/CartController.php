@@ -92,6 +92,10 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1|max:99',
         ]);
 
+        if ($item->variant && $data['quantity'] > $item->variant->stock) {
+            return back()->with('error', "Số lượng vượt quá tồn kho (còn {$item->variant->stock} sản phẩm).");
+        }
+
         $item->update(['quantity' => $data['quantity']]);
 
         return back()->with('success', 'Đã cập nhật số lượng!');

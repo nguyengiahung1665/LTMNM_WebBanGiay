@@ -18,13 +18,13 @@ class CategorySeeder extends Seeder
             ['name' => 'Giày Tập Gym', 'description' => 'Giày tập luyện đa năng cho gym, crossfit và cử tạ.'],
             ['name' => 'Giày Tennis', 'description' => 'Giày tennis chuyên dụng cho sân đất nện và sân cứng.'],
             ['name' => 'Giày Năng Động', 'description' => 'Giày thể thao đa năng cho các hoạt động ngoài trời.'],
+            ['name' => 'Giày Skateboarding', 'description' => 'Giày đế bám và thân bền dành cho trượt ván, phong cách đường phố.'],
             ['name' => 'Dép & Sandals', 'description' => 'Dép thể thao và sandals thoải mái cho ngày hè.'],
         ];
 
         foreach ($categories as $cat) {
-            Category::create([
+            Category::updateOrCreate(['slug' => Str::slug($cat['name'])], [
                 'name' => $cat['name'],
-                'slug' => Str::slug($cat['name']),
                 'description' => $cat['description'],
                 'image' => null,
                 'status' => true,

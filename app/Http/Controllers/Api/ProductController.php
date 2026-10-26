@@ -14,63 +14,64 @@ class ProductController extends Controller
 {
     /**
      * GET /api/products
-     * Query param hỗ trợ: category, brand, min_price, max_price, size, search, sort, page
+     * Query param hỗ trợ: category, brand, min_price, max_price, size, color, sale, search, sort, page
      */
     public function index(Request $request)
     {
-        $query = Product::active()->with(['category', 'brand']);
+        $query = Product::active()->with(['category', 'brand', 'images'])->withAvg('reviews', 'rating');
 
         if ($request->filled('category')) {
-            $category = Category::where('slug', $request->category)->first();
-            if ($category) {
-                $query->where('category_id', $category->id);
-            }
+            $category = Category::active()->where('slug', $request->category)->first();
+            $query->where('category_id', $category?->id ?? 0);
         }
 
         if ($request->filled('brand')) {
-            $brand = Brand::where('slug', $request->brand)->first();
-            if ($brand) {
-                $query->where('brand_id', $brand->id);
-            }
+            $brand = Brand::active()->where('slug', $request->brand)->first();
+            $query->where('brand_id', $brand?->id ?? 0);
         }
 
         if ($request->filled('min_price')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('price', '>=', $request->min_price)
-                    ->orWhere('sale_price', '>=', $request->min_price);
-            });
+            $query->whereRaw('COALESCE(sale_price, price) >= ?', [(int) $request->min_price]);
         }
 
         if ($request->filled('max_price')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('price', '<=', $request->max_price)
-                    ->orWhere('sale_price', '<=', $request->max_price);
+            $query->whereRaw('COALESCE(sale_price, price) <= ?', [(int) $request->max_price]);
+        }
+
+        if ($request->filled('size') || $request->filled('color')) {
+            $query->whereHas('variants', function ($variant) use ($request) {
+                $variant->sellable()
+                    ->when($request->filled('size'), fn ($q) => $q->where('size', $request->string('size')->toString()))
+                    ->when($request->filled('color'), fn ($q) => $q->where('color_name', $request->string('color')->toString()));
             });
         }
 
-        if ($request->filled('size')) {
-            $query->whereHas('sizes', function ($q) use ($request) {
-                $q->where('size', $request->size);
-            });
+        if ($request->boolean('sale')) {
+            $query->whereNotNull('sale_price')->whereColumn('sale_price', '<', 'price');
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('brand', fn ($brand) => $brand->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('category', fn ($category) => $category->where('name', 'like', "%{$search}%"));
             });
         }
 
         switch ($request->get('sort', 'latest')) {
             case 'price_asc':
-                $query->orderBy('price', 'asc');
+                $query->orderByRaw('COALESCE(sale_price, price) asc');
                 break;
             case 'price_desc':
-                $query->orderBy('price', 'desc');
+                $query->orderByRaw('COALESCE(sale_price, price) desc');
                 break;
             case 'name_asc':
                 $query->orderBy('name', 'asc');
+                break;
+            case 'best_selling':
+                $query->withCount('orderItems')->orderByDesc('order_items_count')->latest();
                 break;
             default:
                 $query->latest();
@@ -88,13 +89,20 @@ class ProductController extends Controller
     public function show($slug)
     {
         $product = Product::active()
-            ->with(['category', 'brand', 'images', 'sizes', 'colors', 'reviews.user'])
+            ->with([
+                'category',
+                'brand',
+                'images',
+                'reviews.user',
+                'variants' => fn ($variants) => $variants->where('status', true),
+            ])
             ->where('slug', $slug)
             ->firstOrFail();
 
         $related = Product::active()
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
+            ->with(['category', 'brand', 'images'])
             ->latest()
             ->take(4)
             ->get();

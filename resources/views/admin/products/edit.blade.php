@@ -64,8 +64,8 @@
                 <label>Ảnh đại diện</label>
                 @if($product->thumbnail_url)
                     <div style="margin-bottom: 8px;">
-                        <img src="{{ $product->thumbnail_url }}" alt="Current thumbnail"
-                            style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <img src="{{ $product->thumbnail_url }}" alt="Current thumbnail" data-product-image data-fallback-src="{{ asset('images/product-placeholder.svg') }}"
+                            style="width: 100px; height: 100px; object-fit: contain; background:#f5f5f5; border-radius: 8px; border: 1px solid #e0e0e0;">
                     </div>
                 @endif
                 <input type="file" name="thumbnail" class="form-control" accept="image/*">
@@ -100,6 +100,8 @@
                             style="max-width: 130px;" value="{{ $variant->size }}">
                         <input type="text" name="variants[{{ $i }}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)"
                             style="max-width: 150px;" value="{{ $variant->color_name }}">
+                        <input type="text" name="variants[{{ $i }}][color_code]" class="form-control" placeholder="#000000"
+                            pattern="^#[0-9A-Fa-f]{6}$" title="Mã màu dạng #RRGGBB" style="max-width: 105px;" value="{{ $variant->color_code }}">
                         <input type="number" name="variants[{{ $i }}][stock]" class="form-control" placeholder="Số lượng"
                             style="max-width: 120px;" min="0" value="{{ $variant->stock }}" required>
                         <input type="number" name="variants[{{ $i }}][price]" class="form-control" placeholder="Giá"
@@ -113,6 +115,7 @@
                         <input type="text" name="variants[0][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                         <input type="text" name="variants[0][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                         <input type="text" name="variants[0][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
+                        <input type="text" name="variants[0][color_code]" class="form-control" placeholder="#000000" pattern="^#[0-9A-Fa-f]{6}$" title="Mã màu dạng #RRGGBB" style="max-width: 105px;">
                         <input type="number" name="variants[0][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
                         <input type="number" name="variants[0][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
                         <input type="number" name="variants[0][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">
@@ -135,8 +138,8 @@
                 <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                     @foreach($product->images as $image)
                         <label style="text-align: center; cursor: pointer;">
-                            <img src="{{ $image->image_url ?? asset('storage/' . $image->image) }}"
-                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #e0e0e0; display: block; margin-bottom: 4px;">
+                            <img src="{{ $image->image_url }}" alt="Ảnh gallery {{ $loop->iteration }}" data-product-image data-fallback-src="{{ asset('images/product-placeholder.svg') }}"
+                                style="width: 80px; height: 80px; object-fit: contain; background:#f5f5f5; border-radius: 6px; border: 1px solid #e0e0e0; display: block; margin-bottom: 4px;">
                             <input type="checkbox" name="delete_images[]" value="{{ $image->id }}"> Xóa
                         </label>
                     @endforeach
@@ -158,6 +161,7 @@
                     <input type="text" name="variants[${variantIndex}][sku]" class="form-control" placeholder="SKU" style="max-width: 150px;" required>
                     <input type="text" name="variants[${variantIndex}][size]" class="form-control" placeholder="Size (VD: 39)" style="max-width: 130px;">
                     <input type="text" name="variants[${variantIndex}][color_name]" class="form-control" placeholder="Tên màu (VD: Đen)" style="max-width: 150px;">
+                    <input type="text" name="variants[${variantIndex}][color_code]" class="form-control" placeholder="#000000" pattern="^#[0-9A-Fa-f]{6}$" title="Mã màu dạng #RRGGBB" style="max-width: 105px;">
                     <input type="number" name="variants[${variantIndex}][stock]" class="form-control" placeholder="Số lượng" style="max-width: 120px;" min="0" required>
                     <input type="number" name="variants[${variantIndex}][price]" class="form-control" placeholder="Giá" style="max-width: 140px;" min="0" required>
                     <input type="number" name="variants[${variantIndex}][sale_price]" class="form-control" placeholder="Giá sale" style="max-width: 140px;" min="0">

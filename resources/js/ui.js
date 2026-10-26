@@ -1,5 +1,16 @@
 const toastIcons = { success: '✓', error: '!', warning: '⚠', info: 'i' };
 
+// Product images may come from older database rows or remote URLs. If one
+// cannot be loaded, replace it once with the local storefront placeholder.
+document.addEventListener('error', event => {
+    const image = event.target;
+    if (!(image instanceof HTMLImageElement) || !image.matches('[data-product-image]')) return;
+    const fallback = image.dataset.fallbackSrc;
+    if (!fallback || image.src === fallback || image.dataset.fallbackApplied === '1') return;
+    image.dataset.fallbackApplied = '1';
+    image.src = fallback;
+}, true);
+
 function removeToast(toast) {
     if (!toast || toast.classList.contains('is-leaving')) return;
     toast.classList.add('is-leaving');
@@ -97,6 +108,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: form.dataset.confirmType || 'danger',
                 onConfirm: () => { form.dataset.confirmed = '1'; form.requestSubmit(); },
             });
+        });
+    });
+
+    const menu = document.querySelector('[data-mobile-menu]');
+    const backdrop = document.querySelector('.mobile-nav-backdrop');
+    const menuToggle = document.querySelector('[data-mobile-menu-toggle]');
+    const setMenu = open => {
+        if (!menu || !backdrop || !menuToggle) return;
+        menu.hidden = !open;
+        backdrop.hidden = !open;
+        menuToggle.setAttribute('aria-expanded', String(open));
+        document.body.classList.toggle('nav-open', open);
+    };
+    menuToggle?.addEventListener('click', () => setMenu(menu.hidden));
+    document.querySelectorAll('[data-mobile-menu-close]').forEach(button => button.addEventListener('click', () => setMenu(false)));
+
+    const mobileSearch = document.querySelector('[data-mobile-search]');
+    document.querySelector('[data-mobile-search-toggle]')?.addEventListener('click', () => {
+        if (!mobileSearch) return;
+        mobileSearch.hidden = !mobileSearch.hidden;
+        if (!mobileSearch.hidden) mobileSearch.querySelector('input')?.focus();
+    });
+
+    const account = document.querySelector('.account-menu');
+    account?.querySelector('.account-menu__trigger')?.addEventListener('click', event => {
+        event.stopPropagation();
+        const open = account.classList.toggle('is-open');
+        event.currentTarget.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', event => {
+        if (account && !account.contains(event.target)) {
+            account.classList.remove('is-open');
+            account.querySelector('.account-menu__trigger')?.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    const filters = document.querySelector('[data-catalog-filters]');
+    const setFilters = open => {
+        filters?.classList.toggle('is-open', open);
+        document.body.classList.toggle('nav-open', open);
+    };
+    document.querySelector('[data-filter-open]')?.addEventListener('click', () => setFilters(true));
+    document.querySelector('[data-filter-close]')?.addEventListener('click', () => setFilters(false));
+
+    document.querySelectorAll('[data-navigate-select]').forEach(select => {
+        select.addEventListener('change', () => { if (select.value) window.location.assign(select.value); });
+    });
+
+    document.querySelectorAll('form[data-wishlist-form]').forEach(form => {
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const button = event.submitter || form.querySelector('button');
+            if (!button || button.disabled) return;
+            button.disabled = true;
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) throw new Error(String(response.status));
+                const data = await response.json();
+                button.classList.toggle('is-active', data.wished);
+                button.setAttribute('aria-pressed', String(data.wished));
+                button.setAttribute('aria-label', data.wished ? 'Bỏ khỏi yêu thích' : 'Thêm vào yêu thích');
+                if (!data.wished && form.dataset.removeCard === '1') {
+                    form.closest('.product-card')?.remove();
+                    if (!document.querySelector('.product-card')) window.location.reload();
+                }
+                showToast(data.wished ? 'Đã thêm vào danh sách yêu thích.' : 'Đã bỏ khỏi danh sách yêu thích.', 'success');
+            } catch (error) {
+                showToast(friendlyApiMessage(Number(error.message)), 'error');
+            } finally {
+                button.disabled = false;
+            }
         });
     });
 });

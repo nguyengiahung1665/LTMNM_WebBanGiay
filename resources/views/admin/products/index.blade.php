@@ -43,8 +43,8 @@
                     @foreach($products as $product)
                         <tr>
                             <td>{{ $product->id }}</td>
-                            <td><img src="{{ $product->thumbnail_url }}" alt=""
-                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;"></td>
+                            <td><img src="{{ $product->thumbnail_url }}" alt="{{ $product->name }}" data-product-image data-fallback-src="{{ asset('images/product-placeholder.svg') }}"
+                                    style="width: 50px; height: 50px; object-fit: contain; background:#f5f5f5; border-radius: 6px;"></td>
                             <td style="font-weight: 500;">{{ $product->name }}</td>
                             <td>{{ $product->category->name ?? '—' }}</td>
                             <td>{{ $product->brand->name ?? '—' }}</td>

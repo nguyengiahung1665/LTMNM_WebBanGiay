@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (field.required && !field.value.trim()) message = field.dataset.requiredMessage || 'Vui lòng nhập thông tin này.';
             if (!message && field.type === 'email' && field.value && field.validity.typeMismatch) message = field.dataset.emailMessage || 'Email không hợp lệ.';
             if (!message && field.name === 'new_password_confirmation' && field.value !== form.elements.new_password?.value) message = 'Xác nhận mật khẩu không khớp.';
+            if (!message && field.name === 'password_confirmation' && field.value !== form.elements.password?.value) message = 'Xác nhận mật khẩu không khớp.';
             field.classList.toggle('is-invalid', Boolean(message)); field.setAttribute('aria-invalid', message ? 'true' : 'false');
             if (feedback) { feedback.textContent = message; feedback.hidden = !message; }
             return !message;

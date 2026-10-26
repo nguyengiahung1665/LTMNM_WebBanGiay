@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Tạo tài khoản Admin
-        User::create([
+        User::updateOrCreate(['email' => 'admin@webanhang.com'], [
             'name' => 'Quản Trị Viên',
             'email' => 'admin@webanhang.com',
             'phone' => '0987654321',
@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Tạo tài khoản User mẫu
-        User::create([
+        User::updateOrCreate(['email' => 'user@webanhang.com'], [
             'name' => 'Nguyễn Văn A',
             'email' => 'user@webanhang.com',
             'phone' => '0912345678',

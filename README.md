@@ -4,7 +4,7 @@ Giảng Viên Hướng Dẫn: Nguyễn Minh Hiển
 Sinh Viên Thực Hiện: 
  - Nguyễn Gia Hưng
  - Nguyễn Thị Thuý Lành
- - Nguyễn Hoà Hưng
+ - Nguyễn Hoà Hưng  
   
 
 📌 GIỚI THIỆU ĐỀ TÀI
@@ -41,7 +41,7 @@ SneakerShop là hệ thống website bán giày trực tuyến xây dựng trên
 
 🛠️ CÔNG NGHỆ SỬ DỤNG
 - Backend Framework: PHP 8.3+, Laravel 13.x
-- Database: SQLite (mặc định môi trường dev) / hỗ trợ MySQL
+- Database: MySQL 8+ (mặc định cho môi trường local và runtime)
 - Frontend: Blade Template, CSS viết tay tùy biến, Chart.js (dashboard admin)
 - Realtime: Laravel Reverb + Laravel Echo (WebSocket)
 - Queue: Laravel Queue (driver database)
@@ -52,14 +52,13 @@ SneakerShop là hệ thống website bán giày trực tuyến xây dựng trên
 
 1️⃣ Clone Repository
 ```
-git clone [Điền link repo GitHub của bạn]
+git clone https://github.com/nguyengiahung1665/LTMNM_WebBanGiay
 cd Do-An-PHP-WebBanGiay
 ```
 
-2️⃣ Cài Đặt Thư Viện
+2️⃣ Cài Đặt Thư Viện PHP
 ```
 composer install
-npm install
 ```
 
 3️⃣ Cấu Hình File Môi Trường (.env)
@@ -67,7 +66,10 @@ npm install
 copy .env.example .env
 php artisan key:generate
 ```
-Mặc định dự án dùng SQLite, không cần cấu hình thêm. Nếu muốn dùng MySQL, sửa trong `.env`:
+Khởi động MySQL trong Laragon, tạo database dùng charset `utf8mb4`, sau đó kiểm tra `.env`:
+```sql
+CREATE DATABASE webbangiay CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -79,12 +81,18 @@ DB_PASSWORD=
 
 4️⃣ Khởi Tạo CSDL & Seed Dữ Liệu Mẫu
 ```
+php artisan optimize:clear
 php artisan migrate --seed
 ```
+
+Khi chủ động muốn xóa toàn bộ dữ liệu và tạo lại database mẫu, dùng `php artisan migrate:fresh --seed`.
+
+Các bảng `sessions`, `cache`, `cache_locks`, `jobs`, `job_batches` và `failed_jobs` được tạo bởi migration để phục vụ các driver database đã cấu hình trong `.env`.
 
 5️⃣ Tạo Liên Kết Storage & Build Frontend
 ```
 php artisan storage:link
+npm install
 npm run build
 ```
 
@@ -100,6 +108,8 @@ php artisan reverb:start
 ```
 
 Truy cập hệ thống tại: http://127.0.0.1:8000
+
+Nếu chạy trực tiếp bằng Laragon, có thể dùng virtual host mà Laragon tạo cho thư mục dự án thay cho `php artisan serve`.
 
 🔑 TÀI KHOẢN ĐĂNG NHẬP MẪU (Sau khi Seed)
 
@@ -137,4 +147,3 @@ Do-An-PHP-WebBanGiay/
     ├── cache.php                # Whitelist class được phép cache
     └── broadcasting.php         # Cấu hình Reverb
 ```
-

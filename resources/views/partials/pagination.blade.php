@@ -1,9 +1,9 @@
 @if ($paginator->hasPages())
     <nav class="pagination" role="navigation" aria-label="Pagination Navigation">
         @if ($paginator->onFirstPage())
-            <span aria-disabled="true">&laquo; Previous</span>
+            <span aria-disabled="true">&laquo; Trước</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" rel="prev">&laquo; Previous</a>
+            <a href="{{ $paginator->previousPageUrl() }}" rel="prev">&laquo; Trước</a>
         @endif
 
         @foreach ($elements as $element)
@@ -23,9 +23,9 @@
         @endforeach
 
         @if ($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" rel="next">Next &raquo;</a>
+            <a href="{{ $paginator->nextPageUrl() }}" rel="next">Sau &raquo;</a>
         @else
-            <span aria-disabled="true">Next &raquo;</span>
+            <span aria-disabled="true">Sau &raquo;</span>
         @endif
     </nav>
 @endif

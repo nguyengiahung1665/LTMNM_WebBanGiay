@@ -21,18 +21,29 @@ class CacheService
     public const KEY_CATEGORIES = 'categories.active';
     public const KEY_BRANDS = 'brands.active';
     public const KEY_HOME = 'home.data';
+    public const KEY_PRODUCTS_VERSION = 'products.cache.version';
 
     public static function categories(): mixed
     {
         return Cache::remember(self::KEY_CATEGORIES, self::TTL_LONG, function () {
-            return \App\Models\Category::active()->get();
+            return \App\Models\Category::active()
+                ->whereHas('products', fn ($products) => $products
+                    ->active()
+                    ->whereHas('variants', fn ($variants) => $variants->sellable()))
+                ->orderBy('name')
+                ->get();
         });
     }
 
     public static function brands(): mixed
     {
         return Cache::remember(self::KEY_BRANDS, self::TTL_LONG, function () {
-            return \App\Models\Brand::active()->get();
+            return \App\Models\Brand::active()
+                ->whereHas('products', fn ($products) => $products
+                    ->active()
+                    ->whereHas('variants', fn ($variants) => $variants->sellable()))
+                ->orderBy('name')
+                ->get();
         });
     }
 
@@ -43,7 +54,9 @@ class CacheService
 
     public static function productListKey(string $queryString): string
     {
-        return 'products.list.' . md5($queryString);
+        $version = (int) Cache::get(self::KEY_PRODUCTS_VERSION, 1);
+
+        return "products.list.{$version}.".md5($queryString);
     }
 
     /**
@@ -76,12 +89,11 @@ class CacheService
         }
 
         Cache::forget(self::KEY_HOME);
+        Cache::forget(self::KEY_CATEGORIES);
+        Cache::forget(self::KEY_BRANDS);
+        Cache::forever(self::KEY_PRODUCTS_VERSION, (int) Cache::get(self::KEY_PRODUCTS_VERSION, 1) + 1);
 
-        // Cache danh sách sản phẩm được key theo query string (rất nhiều
-        // biến thể lọc/sắp xếp khác nhau) nên dùng driver hỗ trợ "tag"
-        // (ví dụ Redis) sẽ xoá gọn hơn nhiều so với việc nhớ từng key.
-        // Với driver database/file (mặc định của đồ án) ta đơn giản hoá
-        // bằng cách để TTL ngắn (5 phút) cho danh sách sản phẩm thay vì
-        // xoá thủ công từng biến thể.
+        // Tăng version để mọi tổ hợp filter/sort tự chuyển sang cache key mới.
+        // Các key cũ hết hạn theo TTL ngắn, không cần scan toàn bộ cache table.
     }
 }
